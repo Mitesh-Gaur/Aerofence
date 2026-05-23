@@ -13,6 +13,8 @@ interface OverpassElementTags {
   icao?: string;
   ref?: string;
   addrCity?: string;
+  addrState?: string;
+  addrCountry?: string;
   aeroway?: string;
 }
 
@@ -43,6 +45,8 @@ function readTags(value: unknown): OverpassElementTags {
     icao: readString(value, 'icao'),
     ref: readString(value, 'ref'),
     addrCity: readString(value, 'addr:city'),
+    addrState: readString(value, 'addr:state'),
+    addrCountry: readString(value, 'addr:country'),
     aeroway: readString(value, 'aeroway'),
   };
 }
@@ -139,6 +143,8 @@ function toAirports(elements: OverpassElement[]): Airport[] {
     iataCode: getAirportCode(element),
     name: getElementName(element),
     city: element.tags.addrCity ?? 'Unknown city',
+    state: element.tags.addrState,
+    country: element.tags.addrCountry,
     source: `OpenStreetMap Overpass API (${element.type}/${element.id})`,
     fetchedAt,
     boundary: element.geometry,

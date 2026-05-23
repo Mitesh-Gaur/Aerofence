@@ -19,6 +19,8 @@ export interface Airport {
   iataCode: string;
   name: string;
   city: string;
+  state?: string;
+  country?: string;
   source: string;
   fetchedAt?: number;
   boundary: Coordinate[];

@@ -1,9 +1,10 @@
-import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, {useRef, useEffect} from 'react';
+import {StyleSheet, View, Pressable} from 'react-native';
 import MapView, {Circle, Marker, Polygon, PROVIDER_GOOGLE} from 'react-native-maps';
 
 import {getMapRegion} from '../features/geofence/coordinateUtils';
 import {Airport, Coordinate, Terminal} from '../types/geofence';
+import {AppIcon} from './AppIcon';
 
 interface AirportMapProps {
   airports: Airport[];
@@ -32,6 +33,8 @@ export function AirportMap({
   accuracyMeters,
   showUnmatchedCandidates = false,
 }: AirportMapProps): React.JSX.Element {
+  const mapRef = useRef<MapView | null>(null);
+
   const visibleAirports = focusedAirport
     ? [focusedAirport]
     : showUnmatchedCandidates
@@ -44,46 +47,80 @@ export function AirportMap({
     ...visibleTerminals.flatMap(terminal => terminal.polygon),
   ];
 
+  const coordsKey = coordinates.map(c => `${c.latitude}:${c.longitude}`).join(',');
+
+  // Animate to fit all coordinates (user location + geofence polygons) when coordinates change
+  useEffect(() => {
+    if (mapRef.current) {
+      mapRef.current.animateToRegion(getMapRegion(coordinates), 600);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coordsKey]);
+
+  const handleRecenter = () => {
+    if (mapRef.current) {
+      mapRef.current.animateToRegion(getMapRegion(coordinates), 600);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <MapView
+        ref={mapRef}
         provider={PROVIDER_GOOGLE}
         style={styles.map}
-        initialRegion={getMapRegion(coordinates)}
-        region={getMapRegion(coordinates)}>
+        initialRegion={getMapRegion(coordinates)}>
         {visibleAirports.map(airport => (
           <Polygon
             key={airport.id}
             coordinates={airport.boundary.map(toLatLng)}
-            fillColor="rgba(18, 60, 105, 0.12)"
-            strokeColor="#123C69"
+            fillColor="rgba(16, 185, 129, 0.08)"
+            strokeColor="#10B981"
             strokeWidth={2}
           />
         ))}
 
-        {visibleTerminals.map(terminal => (
-          <Polygon
-            key={terminal.id}
-            coordinates={terminal.polygon.map(toLatLng)}
-            fillColor={
-              terminal.id === focusedTerminal?.id
-                ? 'rgba(11, 107, 58, 0.28)'
-                : 'rgba(246, 174, 45, 0.22)'
-            }
-            strokeColor={terminal.id === focusedTerminal?.id ? '#0B6B3A' : '#9A6200'}
-            strokeWidth={2}
-          />
-        ))}
+        {visibleTerminals.map(terminal => {
+          const isFocused = terminal.id === focusedTerminal?.id;
+          return (
+            <Polygon
+              key={terminal.id}
+              coordinates={terminal.polygon.map(toLatLng)}
+              fillColor={
+                isFocused
+                  ? 'rgba(16, 185, 129, 0.16)'
+                  : 'rgba(160, 174, 192, 0.08)'
+              }
+              strokeColor={isFocused ? '#10B981' : '#A0AEC0'}
+              strokeWidth={2}
+            />
+          );
+        })}
 
         <Circle
           center={toLatLng(location)}
           radius={accuracyMeters}
-          fillColor="rgba(197, 48, 48, 0.12)"
-          strokeColor="#C53030"
+          fillColor="rgba(30, 98, 236, 0.08)"
+          strokeColor="#1E62EC"
           strokeWidth={1}
         />
-        <Marker coordinate={toLatLng(location)} title="Current location" />
+
+        <Marker coordinate={toLatLng(location)} anchor={{x: 0.5, y: 0.5}}>
+          <View style={styles.userDotOuter}>
+            <View style={styles.userDotInner} />
+          </View>
+        </Marker>
       </MapView>
+
+      {/* Floating Recenter Button */}
+      <Pressable
+        style={({pressed}) => [
+          styles.recenterButton,
+          pressed ? styles.pressed : undefined,
+        ]}
+        onPress={handleRecenter}>
+        <AppIcon name="location-target" color="#1E62EC" size={20} />
+      </Pressable>
     </View>
   );
 }
@@ -91,11 +128,54 @@ export function AirportMap({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    height: 300,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    height: 220,
     overflow: 'hidden',
   },
   map: {
     flex: 1,
+  },
+  userDotOuter: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  userDotInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#1E62EC',
+  },
+  recenterButton: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  pressed: {
+    opacity: 0.85,
+    backgroundColor: '#F8FAFC',
   },
 });

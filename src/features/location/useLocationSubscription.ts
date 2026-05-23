@@ -5,6 +5,14 @@ import Geolocation, {
 } from 'react-native-geolocation-service';
 
 import {useLocationStore} from './locationStore';
+import {LocationFix} from '../../types/geofence';
+
+const SFO_LOCATION: LocationFix = {
+  latitude: 37.621312,
+  longitude: -122.378955,
+  accuracy: 12.4,
+  timestamp: 1747215683000, // May 14, 2025 09:41:23 AM
+};
 
 async function requestLocationPermission(): Promise<boolean> {
   if (Platform.OS === 'ios') {
@@ -19,7 +27,7 @@ async function requestLocationPermission(): Promise<boolean> {
   return result === PermissionsAndroid.RESULTS.GRANTED;
 }
 
-function toLocationFix(position: GeoPosition) {
+function toLocationFix(position: GeoPosition): LocationFix {
   return {
     latitude: position.coords.latitude,
     longitude: position.coords.longitude,
@@ -33,8 +41,17 @@ export function useLocationSubscription(): void {
   const setLocation = useLocationStore(state => state.setLocation);
   const setPermission = useLocationStore(state => state.setPermission);
   const setWatching = useLocationStore(state => state.setWatching);
+  const isDemoMode = useLocationStore(state => state.isDemoMode);
 
   useEffect(() => {
+    if (isDemoMode) {
+      setLocation(SFO_LOCATION);
+      setWatching(true);
+      setPermission(true);
+      setError(undefined);
+      return;
+    }
+
     let watchId: number | undefined;
     let mounted = true;
 
@@ -54,8 +71,16 @@ export function useLocationSubscription(): void {
 
       setWatching(true);
       watchId = Geolocation.watchPosition(
-        position => setLocation(toLocationFix(position)),
-        error => setError(error.message),
+        position => {
+          if (!isDemoMode) {
+            setLocation(toLocationFix(position));
+          }
+        },
+        error => {
+          if (!isDemoMode) {
+            setError(error.message);
+          }
+        },
         {
           accuracy: {android: 'high', ios: 'best'},
           distanceFilter: 1,
@@ -76,5 +101,5 @@ export function useLocationSubscription(): void {
       }
       setWatching(false);
     };
-  }, [setError, setLocation, setPermission, setWatching]);
+  }, [setError, setLocation, setPermission, setWatching, isDemoMode]);
 }

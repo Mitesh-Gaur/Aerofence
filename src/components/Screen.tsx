@@ -28,7 +28,7 @@ export function Screen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#061A22',
+    backgroundColor: '#F8FAFC',
   },
   content: {
     padding: 20,

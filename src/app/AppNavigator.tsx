@@ -15,10 +15,7 @@ export function AppNavigator(): React.JSX.Element {
       <Stack.Navigator
         initialRouteName="Home"
         screenOptions={{
-          headerStyle: {backgroundColor: '#063E31'},
-          headerTintColor: '#F4FBFC',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {fontWeight: '900'},
+          headerShown: false,
         }}>
         <Stack.Screen
           name="Home"

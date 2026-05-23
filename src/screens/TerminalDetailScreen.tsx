@@ -1,162 +1,363 @@
-import React, {useMemo} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
-import {StackActions} from '@react-navigation/native';
-import {NativeStackScreenProps} from '@react-navigation/native-stack';
+import React, { useMemo } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import {ActionButton} from '../components/ActionButton';
-import {AirportMap} from '../components/AirportMap';
-import {MetricTile} from '../components/MetricTile';
-import {Screen} from '../components/Screen';
-import {StatusPanel} from '../components/StatusPanel';
-import {detectTerminal} from '../features/geofence/detection';
-import {RootStackParamList} from '../navigation/types';
+import { ActionButton } from '../components/ActionButton';
+import { AirportMap } from '../components/AirportMap';
+import { AppIcon } from '../components/AppIcon';
+import { Header } from '../components/Header';
+import { InfoRow } from '../components/InfoRow';
+import { detectTerminal } from '../features/geofence/detection';
+import { RootStackParamList } from '../navigation/types';
 
 type TerminalDetailScreenProps = NativeStackScreenProps<
   RootStackParamList,
   'TerminalDetail'
 >;
 
+function getTerminalType(name: string): string {
+  if (name.toLowerCase().includes('international')) {
+    return 'International Terminal';
+  }
+  return 'Domestic Terminal';
+}
+
+function formatAirportLocation(airport: {
+  city: string;
+  state?: string;
+  country?: string;
+  iataCode?: string;
+}): string {
+  const parts = [airport.city];
+  if (airport.state) {
+    parts.push(airport.state);
+  }
+  if (airport.country) {
+    parts.push(airport.country);
+  }
+  if (parts.length === 1 && airport.iataCode === 'SFO') {
+    return 'San Francisco, California, USA';
+  }
+  return parts.join(', ');
+}
+
 export function TerminalDetailScreen({
   navigation,
   route,
 }: TerminalDetailScreenProps): React.JSX.Element {
-  const {airport, location, airportResult} = route.params;
+  const { airport, location } = route.params;
+
   const terminalDetection = useMemo(
     () => detectTerminal(airport, location),
     [airport, location],
   );
-  const ambiguityResolution =
-    terminalDetection.status === 'near-boundary'
-      ? 'Overlap handled by boundary proximity and GPS accuracy radius.'
-      : 'Boundary resolved by terminal polygon containment.';
+
+  const status = terminalDetection.status;
+  const isInside = status === 'inside' || status === 'near-boundary';
+
+  const terminalName = terminalDetection.terminal?.name ?? 'Terminal 1';
+  const terminalType = getTerminalType(terminalName);
 
   return (
-    <Screen>
-      <View style={styles.flowHeader}>
-        <Text style={styles.flowStep}>SCREEN 3 OF 3</Text>
-        <Text style={styles.flowTitle}>{airport.iataCode} INFRASTRUCTURE</Text>
-      </View>
-
-      <AirportMap
-        airports={[airport]}
-        focusedAirport={airport}
-        focusedTerminal={terminalDetection.terminal}
-        location={location}
-        accuracyMeters={location.accuracy}
+    <View style={styles.rootContainer}>
+      <Header
+        title="Terminal Details"
+        leftIcon="back"
+        onLeftPress={() => navigation.goBack()}
       />
 
-      <StatusPanel
-        eyebrow="Current infrastructure node"
-        title={terminalDetection.label}
-        detail={ambiguityResolution}
-        tone={
-          terminalDetection.status === 'inside'
-            ? 'good'
-            : terminalDetection.status === 'near-boundary'
-              ? 'warning'
-              : 'neutral'
-        }
-      />
+      <ScrollView
+        style={styles.scrollStyle}
+        contentContainerStyle={styles.scrollContent}>
 
-      <View style={styles.metrics}>
-        <MetricTile label="Airport" value={airport.iataCode} tone="good" />
-        <MetricTile label="City" value={airport.city} />
-        <MetricTile label="Zone" value={terminalDetection.label} tone="good" />
-        <MetricTile label="Latitude" value={location.latitude.toFixed(6)} />
-        <MetricTile label="Longitude" value={location.longitude.toFixed(6)} />
-        <MetricTile label="Accuracy" value={`${location.accuracy.toFixed(1)} m`} />
-        <MetricTile label="Airport boundary" value={airportResult.status} />
-      </View>
+        {/* Card 1: Facility details card (same as Screen 2) */}
+        <View style={styles.card}>
+          <View style={styles.facilityRow}>
+            <View style={styles.iconCircleBlue}>
+              <AppIcon name="airplane" color="#FFFFFF" size={18} />
+            </View>
+            <View style={styles.facilityInfo}>
+              <Text style={styles.facilityName} numberOfLines={2}>
+                {airport.name}
+              </Text>
+              <Text style={styles.facilityCity}>
+                {formatAirportLocation(airport)}
+              </Text>
+            </View>
+            <View style={styles.iataCodeBadge}>
+              <Text style={styles.iataCodeText}>{airport.iataCode}</Text>
+            </View>
+          </View>
+        </View>
 
-      <View style={styles.breakdownPanel}>
-        <Text style={styles.breakdownTitle}>COMPLETE AGGREGATED BREAKDOWN</Text>
-        <Text style={styles.breakdownLine}>FACILITY : {airport.name}</Text>
-        <Text style={styles.breakdownLine}>
-          HUB IATA : {airport.iataCode} ({airport.city})
-        </Text>
-        <Text style={styles.breakdownLine}>ZONE     : {terminalDetection.label}</Text>
-        <Text style={styles.breakdownLine}>
-          GPS FIX  : {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
-        </Text>
-        <Text style={styles.breakdownLine}>
-          ACCURACY : +/-{location.accuracy.toFixed(1)} meters
-        </Text>
-      </View>
+        {/* Card 2: Terminal detected status (Green layout) */}
+        {isInside ? (
+          <View style={styles.terminalBanner}>
+            <AppIcon name="terminal" color="#059669" size={24} />
+            <View style={styles.bannerTextContainer}>
+              <Text style={styles.bannerTitle}>{terminalName}</Text>
+              <Text style={styles.bannerSubtitle}>{terminalType}</Text>
+            </View>
+            <View style={styles.detectedBadge}>
+              <Text style={styles.detectedText}>Detected</Text>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.terminalBannerNeutral}>
+            <AppIcon name="info" color="#4B5563" size={24} />
+            <View style={styles.bannerTextContainer}>
+              <Text style={styles.bannerTitleNeutral}>Airside area</Text>
+              <Text style={styles.bannerSubtitleNeutral}>Non-terminal zone</Text>
+            </View>
+          </View>
+        )}
 
-      <Text style={styles.source}>{airport.source || 'Boundary source unavailable'}</Text>
+        {/* Card 3: Geofence Map */}
+        <AirportMap
+          airports={[airport]}
+          focusedAirport={airport}
+          focusedTerminal={terminalDetection.terminal}
+          location={location}
+          accuracyMeters={location.accuracy}
+        />
 
-      {terminalDetection.status === 'near-boundary' ? (
-        <Text style={styles.warning}>
-          Terminal match is uncertain because GPS accuracy overlaps a terminal boundary.
-        </Text>
-      ) : null}
+        {/* Card 4: Metrics Table */}
+        <View style={styles.card}>
+          <InfoRow label="Airport (IATA)" value={airport.iataCode} />
+          <InfoRow
+            label="Terminal"
+            value={
+              <Text style={styles.greenValue}>
+                {isInside ? terminalName : 'None'}
+              </Text>
+            }
+          />
+          <InfoRow label="Terminal Type" value={isInside ? terminalType : 'N/A'} />
+          <InfoRow
+            label="User Coordinates"
+            value={
+              <Text style={styles.blueValue}>
+                {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
+              </Text>
+            }
+          />
+          <InfoRow
+            label="Accuracy"
+            value={<Text style={styles.blueValue}>{location.accuracy.toFixed(1)} m</Text>}
+          />
+          <InfoRow
+            label="Detection Status"
+            value={
+              <Text
+                style={[
+                  styles.statusValue,
+                  isInside ? styles.greenStatus : styles.neutralStatus,
+                ]}>
+                {isInside ? 'Inside Terminal Polygon' : 'Outside Terminal Polygons'}
+              </Text>
+            }
+          />
+        </View>
 
-      <ActionButton
-        title="BACK TO AIRPORT STATUS"
-        variant="secondary"
-        onPress={() => navigation.goBack()}
-      />
-      <ActionButton
-        title="TERMINATE FLOW AND RESET HOME"
-        onPress={() => navigation.dispatch(StackActions.popToTop())}
-      />
-    </Screen>
+        {/* Terminal warning (yellow, visible if status is 'near-boundary') */}
+        {status === 'near-boundary' && (
+          <View style={styles.warningBanner}>
+            <AppIcon name="warning" color="#D97706" size={22} style={styles.warningIcon} />
+            <View style={styles.warningTextCol}>
+              <Text style={styles.warningTitle}>Terminal Boundary Alert</Text>
+              <Text style={styles.warningDesc}>
+                GPS accuracy overlaps a terminal boundary. Terminal match is slightly uncertain.
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Bottom Actions Row (Both are outline/secondary buttons) */}
+        <View style={styles.actionsRow}>
+          <ActionButton
+            title="Back to Home"
+            variant="primary"
+            style={styles.actionBtn}
+            onPress={() => navigation.popToTop()}
+          />
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  metrics: {
+  rootContainer: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  scrollStyle: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 20,
+    gap: 16,
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 16,
+    shadowColor: '#1E293B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  facilityRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
+    alignItems: 'center',
   },
-  flowHeader: {
-    backgroundColor: '#0C2530',
-    borderColor: '#214C58',
+  iconCircleBlue: {
+    width: 40,
+    height: 40,
     borderRadius: 8,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: 16,
+    backgroundColor: '#1E62EC',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  flowStep: {
-    color: '#8FB3BE',
+  facilityInfo: {
+    flex: 1,
+    marginLeft: 12,
+    marginRight: 8,
+  },
+  facilityName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1A202C',
+  },
+  facilityCity: {
+    fontSize: 12,
+    color: '#718096',
+    marginTop: 2,
+  },
+  iataCodeBadge: {
+    backgroundColor: '#EBF3FF',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  iataCodeText: {
+    color: '#1E62EC',
     fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 0,
+    fontWeight: '700',
   },
-  flowTitle: {
-    color: '#F4FBFC',
-    fontSize: 24,
-    fontWeight: '900',
-    marginTop: 6,
-  },
-  source: {
-    color: '#8FB3BE',
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  warning: {
-    color: '#F6AE2D',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  breakdownPanel: {
-    backgroundColor: '#0C2530',
-    borderColor: '#2B5863',
-    borderRadius: 8,
-    borderWidth: StyleSheet.hairlineWidth,
+  terminalBanner: {
+    backgroundColor: '#E6F7ED',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    borderRadius: 16,
     padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  breakdownTitle: {
-    color: '#B8F3E0',
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 0,
-    marginBottom: 10,
+  terminalBannerNeutral: {
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  breakdownLine: {
-    color: '#F4FBFC',
-    fontFamily: 'Menlo',
+  bannerTextContainer: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  bannerTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#065F46',
+  },
+  bannerSubtitle: {
     fontSize: 12,
-    lineHeight: 21,
+    color: '#047857',
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  bannerTitleNeutral: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#374151',
+  },
+  bannerSubtitleNeutral: {
+    fontSize: 12,
+    color: '#4B5563',
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  detectedBadge: {
+    backgroundColor: '#DEF7EC',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#10B981',
+  },
+  detectedText: {
+    color: '#03543F',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  blueValue: {
+    color: '#1E62EC',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  greenValue: {
+    color: '#10B981',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  statusValue: {
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  greenStatus: {
+    color: '#10B981',
+  },
+  neutralStatus: {
+    color: '#4B5563',
+  },
+  warningBanner: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: 12,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  warningIcon: {
+    marginRight: 10,
+    marginTop: 2,
+  },
+  warningTextCol: {
+    flex: 1,
+  },
+  warningTitle: {
+    color: '#B45309',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  warningDesc: {
+    color: '#B45309',
+    fontSize: 12,
+    marginTop: 2,
+    lineHeight: 16,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  actionBtn: {
+    flex: 1,
   },
 });
