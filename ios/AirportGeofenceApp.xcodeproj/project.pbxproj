@@ -12,6 +12,9 @@
 		2C8693145870F210F8AFE304 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		DB5A6BB32FC1B24500B97DA1 /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = DB5A6BB22FC1B24500B97DA1 /* Debug.xcconfig */; };
+		DB5A6BB52FC1B34700B97DA1 /* Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = DB5A6BB42FC1B34700B97DA1 /* Release.xcconfig */; };
+		DB5A6BB72FC1B3DA00B97DA1 /* Debug.xcconfig.example in Resources */ = {isa = PBXBuildFile; fileRef = DB5A6BB62FC1B3D700B97DA1 /* Debug.xcconfig.example */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +27,9 @@
 		5DCACB8F33CDC322A6C60F78 /* libPods-AirportGeofenceApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AirportGeofenceApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = AirportGeofenceApp/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = AirportGeofenceApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		DB5A6BB22FC1B24500B97DA1 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		DB5A6BB42FC1B34700B97DA1 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		DB5A6BB62FC1B3D700B97DA1 /* Debug.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text; path = Debug.xcconfig.example; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -42,6 +48,7 @@
 		13B07FAE1A68108700A75B9A /* AirportGeofenceApp */ = {
 			isa = PBXGroup;
 			children = (
+				DB5A6BB12FC1B21E00B97DA1 /* Config */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
@@ -96,6 +103,16 @@
 				5709B34CF0A7D63546082F79 /* Pods-AirportGeofenceApp.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		DB5A6BB12FC1B21E00B97DA1 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				DB5A6BB22FC1B24500B97DA1 /* Debug.xcconfig */,
+				DB5A6BB42FC1B34700B97DA1 /* Release.xcconfig */,
+				DB5A6BB62FC1B3D700B97DA1 /* Debug.xcconfig.example */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -158,9 +175,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DB5A6BB32FC1B24500B97DA1 /* Debug.xcconfig in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
+				DB5A6BB72FC1B3DA00B97DA1 /* Debug.xcconfig.example in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				2C8693145870F210F8AFE304 /* PrivacyInfo.xcprivacy in Resources */,
+				DB5A6BB52FC1B34700B97DA1 /* Release.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -255,7 +275,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3B4392A12AC88292D35C810B /* Pods-AirportGeofenceApp.debug.xcconfig */;
+			baseConfigurationReference = DB5A6BB22FC1B24500B97DA1 /* Debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -285,7 +305,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5709B34CF0A7D63546082F79 /* Pods-AirportGeofenceApp.release.xcconfig */;
+			baseConfigurationReference = DB5A6BB42FC1B34700B97DA1 /* Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
