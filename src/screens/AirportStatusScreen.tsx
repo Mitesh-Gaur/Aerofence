@@ -195,9 +195,9 @@ export function AirportStatusScreen({
                 </View>
                 <Pressable
                   onPress={() => detectForLocation(location, true)}
-                  style={({pressed}) => [
+                  style={({ pressed }) => [
                     styles.retryBtn,
-                    pressed && {opacity: 0.7}
+                    pressed && { opacity: 0.7 }
                   ]}>
                   <Text style={styles.retryBtnText}>Retry</Text>
                 </Pressable>
@@ -283,7 +283,7 @@ export function AirportStatusScreen({
               <InfoRow
                 label="Boundary Data"
                 value={
-                  <Text style={[styles.blueValue, {fontSize: 12, fontWeight: '500'}]}>
+                  <Text style={[styles.blueValue, { fontSize: 12, fontWeight: '500' }]}>
                     {dataSource === 'live'
                       ? 'OSM Overpass API (Live)'
                       : dataSource === 'cache'

@@ -172,7 +172,10 @@ export async function fetchNearbyAirports(
 ): Promise<Airport[]> {
   const response = await fetch(OVERPASS_ENDPOINT, {
     method: 'POST',
-    headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+      'User-Agent': 'AerofenceApp/1.0 (React Native Geofencing Client)',
+    },
     body: `data=${encodeURIComponent(buildAirportQuery(location))}`,
   });
 

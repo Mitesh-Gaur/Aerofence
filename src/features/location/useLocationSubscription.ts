@@ -1,5 +1,5 @@
 import {useEffect} from 'react';
-import {PermissionsAndroid, Platform} from 'react-native';
+import {PermissionsAndroid, Platform, AppState} from 'react-native';
 import Geolocation, {
   GeoPosition,
 } from 'react-native-geolocation-service';
@@ -55,7 +55,16 @@ export function useLocationSubscription(): void {
     let watchId: number | undefined;
     let mounted = true;
 
+    function stopWatching() {
+      if (watchId !== undefined) {
+        Geolocation.clearWatch(watchId);
+        watchId = undefined;
+      }
+    }
+
     async function startWatching() {
+      stopWatching();
+
       const granted = await requestLocationPermission();
 
       if (!mounted) {
@@ -94,12 +103,18 @@ export function useLocationSubscription(): void {
 
     startWatching();
 
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (nextAppState === 'active' && !isDemoMode) {
+        startWatching();
+      }
+    });
+
     return () => {
       mounted = false;
-      if (watchId !== undefined) {
-        Geolocation.clearWatch(watchId);
-      }
+      subscription.remove();
+      stopWatching();
       setWatching(false);
     };
   }, [setError, setLocation, setPermission, setWatching, isDemoMode]);
 }
+

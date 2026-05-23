@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Linking,
   Modal,
   Pressable,
   ScrollView,
@@ -250,7 +251,19 @@ export function HomeScreen({ navigation }: HomeScreenProps): React.JSX.Element {
         {errorMessage ? (
           <View style={styles.errorCard}>
             <AppIcon name="warning" color="#FB7185" size={20} style={styles.thresholdIcon} />
-            <Text style={styles.errorText}>{errorMessage}</Text>
+            <View style={{flex: 1}}>
+              <Text style={styles.errorText}>{errorMessage}</Text>
+              {errorMessage.toLowerCase().includes('permission') && (
+                <Pressable
+                  onPress={() => Linking.openSettings()}
+                  style={({pressed}) => [
+                    styles.settingsBtn,
+                    pressed && {opacity: 0.7}
+                  ]}>
+                  <Text style={styles.settingsBtnText}>Open Settings</Text>
+                </Pressable>
+              )}
+            </View>
           </View>
         ) : null}
 
@@ -598,5 +611,18 @@ const styles = StyleSheet.create({
   historyAccuracy: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  settingsBtn: {
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: 'rgba(225, 29, 72, 0.08)',
+    alignSelf: 'flex-start',
+  },
+  settingsBtnText: {
+    color: '#E11D48',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });
