@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -10,15 +10,15 @@ import {
   Text,
   View,
 } from 'react-native';
-import {NativeStackScreenProps} from '@react-navigation/native-stack';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import {ActionButton} from '../components/ActionButton';
-import {AppIcon} from '../components/AppIcon';
-import {Header} from '../components/Header';
-import {ThemeAwareCard} from '../components/ThemeAwareCard';
-import {useLocationStore} from '../features/location/locationStore';
-import {useLocationSubscription} from '../features/location/useLocationSubscription';
-import {RootStackParamList} from '../navigation/types';
+import { ActionButton } from '../components/ActionButton';
+import { AppIcon } from '../components/AppIcon';
+import { Header } from '../components/Header';
+import { ThemeAwareCard } from '../components/ThemeAwareCard';
+import { useLocationStore } from '../features/location/locationStore';
+import { useLocationSubscription } from '../features/location/useLocationSubscription';
+import { RootStackParamList } from '../navigation/types';
 
 const REQUIRED_ACCURACY_METERS = 25;
 
@@ -39,10 +39,20 @@ function formatTimestamp(timestamp?: number): string {
   });
 }
 
-export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
+function formatTime(timestamp: number): string {
+  return new Date(timestamp).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  });
+}
+
+export function HomeScreen({ navigation }: HomeScreenProps): React.JSX.Element {
   useLocationSubscription();
 
   const currentLocation = useLocationStore(state => state.currentLocation);
+  const locationHistory = useLocationStore(state => state.locationHistory);
   const errorMessage = useLocationStore(state => state.errorMessage);
   const isDemoMode = useLocationStore(state => state.isDemoMode);
   const setDemoMode = useLocationStore(state => state.setDemoMode);
@@ -65,7 +75,7 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
   return (
     <View style={[
       styles.rootContainer,
-      {backgroundColor: isDarkMode ? '#0F172A' : '#F8FAFC'}
+      { backgroundColor: isDarkMode ? '#0F172A' : '#F8FAFC' }
     ]}>
       <Header
         title="Aerofence"
@@ -78,7 +88,7 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
       <ScrollView
         style={styles.scrollStyle}
         contentContainerStyle={styles.scrollContent}>
-        
+
         {/* Card 1: GPS Lock Status */}
         <ThemeAwareCard>
           <View style={styles.row}>
@@ -86,10 +96,10 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
               <AppIcon name="map-pin" color="#1E62EC" size={20} />
             </View>
             <View style={styles.textColumn}>
-              <Text style={[styles.cardTitle, {color: textColor}]}>
+              <Text style={[styles.cardTitle, { color: textColor }]}>
                 {currentLocation ? 'Location Active' : 'Location Acquiring'}
               </Text>
-              <Text style={[styles.cardSubtitle, {color: subtitleColor}]}>
+              <Text style={[styles.cardSubtitle, { color: subtitleColor }]}>
                 {currentLocation
                   ? 'GPS tracking signal established.'
                   : 'Getting your current location...'}
@@ -97,8 +107,8 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
             </View>
             <View style={styles.rightAction}>
               {currentLocation ? (
-                <View style={[styles.checkmarkBadge, {backgroundColor: isDarkMode ? '#1E293B' : '#EBF3FF'}]}>
-                  <AppIcon name="checkmark" color="#1E62EC" size={14} />
+                <View style={[styles.checkmarkBadge, { backgroundColor: isDarkMode ? '#1E293B' : '#EBF3FF' }]}>
+                  <AppIcon name="checkmark" color="#1E62EC" size={16} />
                 </View>
               ) : (
                 <ActivityIndicator color="#1E62EC" size="small" />
@@ -111,7 +121,7 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
         {currentLocation && (
           <ThemeAwareCard>
             <View style={[styles.row, styles.bottomSpacing]}>
-              <Text style={[styles.liveLocationTitle, {color: textColor}]}>Live Location</Text>
+              <Text style={[styles.liveLocationTitle, { color: textColor }]}>Live Location</Text>
               <View style={styles.updatingContainer}>
                 <View style={styles.greenPulseDot} />
                 <Text style={styles.updatingText}>Updating...</Text>
@@ -119,25 +129,25 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
             </View>
 
             <View style={styles.stackedGroup}>
-              <Text style={[styles.label, {color: subtitleColor}]}>Latitude</Text>
+              <Text style={[styles.label, { color: subtitleColor }]}>Latitude</Text>
               <Text style={styles.coordinateValue}>
                 {currentLocation.latitude.toFixed(6)}
               </Text>
             </View>
 
             <View style={styles.stackedGroup}>
-              <Text style={[styles.label, {color: subtitleColor}]}>Longitude</Text>
+              <Text style={[styles.label, { color: subtitleColor }]}>Longitude</Text>
               <Text style={styles.coordinateValue}>
                 {currentLocation.longitude.toFixed(6)}
               </Text>
             </View>
 
-            <View style={[styles.divider, {backgroundColor: dividerColor}]} />
+            <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
             <View style={styles.row}>
               <View style={styles.metricRow}>
                 <AppIcon name="crosshair" color={subtitleColor} size={16} style={styles.metricIcon} />
-                <Text style={[styles.label, {color: subtitleColor}]}>Accuracy</Text>
+                <Text style={[styles.label, { color: subtitleColor }]}>Accuracy</Text>
               </View>
               <View style={styles.rightMetricContainer}>
                 <Text style={[
@@ -155,17 +165,71 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
               </View>
             </View>
 
-            <View style={[styles.divider, {backgroundColor: dividerColor}]} />
+            <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
             <View style={styles.row}>
               <View style={styles.metricRow}>
                 <AppIcon name="clock" color={subtitleColor} size={16} style={styles.metricIcon} />
-                <Text style={[styles.label, {color: subtitleColor}]}>Last Updated</Text>
+                <Text style={[styles.label, { color: subtitleColor }]}>Last Updated</Text>
               </View>
             </View>
-            <Text style={[styles.timestampText, {color: textColor}]}>
+            <Text style={[styles.timestampText, { color: textColor }]}>
               {formatTimestamp(currentLocation.timestamp)}
             </Text>
+          </ThemeAwareCard>
+        )}
+
+        {/* Card: Location History */}
+        {locationHistory.length > 0 && (
+          <ThemeAwareCard>
+            <View style={[styles.row, styles.bottomSpacing]}>
+              <Text style={[styles.liveLocationTitle, { color: textColor }]}>GPS Fix History</Text>
+              <Pressable
+                onPress={() => useLocationStore.getState().clearHistory()}
+                style={({ pressed }) => [
+                  styles.clearBtn,
+                  pressed && { opacity: 0.7 }
+                ]}>
+                <Text style={styles.clearBtnText}>Clear</Text>
+              </Pressable>
+            </View>
+            <View style={styles.historyList}>
+              {locationHistory.map((item, index) => {
+                const isAccGood = item.accuracy <= REQUIRED_ACCURACY_METERS;
+                return (
+                  <View key={index.toString() + '-' + item.timestamp} style={[
+                    styles.historyItemRow,
+                    index < locationHistory.length - 1 ? { borderBottomColor: dividerColor, borderBottomWidth: 1 } : undefined
+                  ]}>
+                    <View style={styles.historyIconCircle}>
+                      <Text style={styles.historyIndexText}>{index + 1}</Text>
+                    </View>
+                    <View style={styles.historyDetails}>
+                      <Text style={[styles.historyCoords, { color: textColor }]}>
+                        {item.latitude.toFixed(5)}, {item.longitude.toFixed(5)}
+                      </Text>
+                      <Text style={[styles.historyTime, { color: subtitleColor }]}>
+                        {formatTime(item.timestamp)}
+                      </Text>
+                    </View>
+                    <View style={styles.rightMetricContainer}>
+                      <Text style={[
+                        styles.historyAccuracy,
+                        isAccGood ? styles.goodColor : styles.warningColor
+                      ]}>
+                        ±{item.accuracy.toFixed(1)}m
+                      </Text>
+                      <Text style={[
+                        styles.accuracyHelperText,
+                        isAccGood ? styles.goodColor : styles.warningColor
+                      ]}>
+                        {isAccGood ? 'Good' : 'Poor'}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
           </ThemeAwareCard>
         )}
 
@@ -202,7 +266,7 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
           disabled={!canCheckAirport}
           onPress={() => {
             if (currentLocation) {
-              navigation.navigate('AirportStatus', {location: currentLocation});
+              navigation.navigate('AirportStatus', { location: currentLocation });
             }
           }}
         />
@@ -217,15 +281,15 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
         <View style={styles.modalOverlay}>
           <View style={[
             styles.modalContent,
-            {backgroundColor: isDarkMode ? '#1E293B' : '#FFFFFF'}
+            { backgroundColor: isDarkMode ? '#1E293B' : '#FFFFFF' }
           ]}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, {color: textColor}]}>Developer Settings</Text>
+              <Text style={[styles.modalTitle, { color: textColor }]}>Developer Settings</Text>
               <Pressable
                 onPress={() => setSettingsVisible(false)}
                 style={[
                   styles.modalCloseBtn,
-                  {backgroundColor: isDarkMode ? '#334155' : '#F1F5F9'}
+                  { backgroundColor: isDarkMode ? '#334155' : '#F1F5F9' }
                 ]}>
                 <AppIcon name="close" color={textColor} size={18} />
               </Pressable>
@@ -234,8 +298,8 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
             {/* Toggle 1: Mock Location */}
             <View style={styles.modalRow}>
               <View style={styles.modalTextCol}>
-                <Text style={[styles.modalSettingTitle, {color: textColor}]}>Mock SFO Airport Location</Text>
-                <Text style={[styles.modalSettingDesc, {color: subtitleColor}]}>
+                <Text style={[styles.modalSettingTitle, { color: textColor }]}>Mock SFO Airport Location</Text>
+                <Text style={[styles.modalSettingDesc, { color: subtitleColor }]}>
                   Simulate GPS fixes at SFO Terminal 1 (37.621312, -122.378955, accuracy: 12.4m) to test geofencing boundaries.
                 </Text>
               </View>
@@ -244,7 +308,7 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
                 onValueChange={val => {
                   setDemoMode(val);
                 }}
-                trackColor={{false: '#CBD5E1', true: '#BFDBFE'}}
+                trackColor={{ false: '#CBD5E1', true: '#BFDBFE' }}
                 thumbColor={isDemoMode ? '#1E62EC' : '#F1F5F9'}
               />
             </View>
@@ -252,11 +316,11 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
             {/* Toggle 2: Dark Mode */}
             <View style={styles.modalRow}>
               <View style={styles.modalTextCol}>
-                <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
-                  <Text style={[styles.modalSettingTitle, {color: textColor}]}>Dark Mode</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={[styles.modalSettingTitle, { color: textColor }]}>Dark Mode</Text>
                   <AppIcon name="moon" color={isDarkMode ? '#F59E0B' : '#718096'} size={16} />
                 </View>
-                <Text style={[styles.modalSettingDesc, {color: subtitleColor}]}>
+                <Text style={[styles.modalSettingDesc, { color: subtitleColor }]}>
                   Transition all screens, headers, details tables, and maps to a midnight theme.
                 </Text>
               </View>
@@ -265,7 +329,7 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
                 onValueChange={val => {
                   setDarkMode(val);
                 }}
-                trackColor={{false: '#CBD5E1', true: '#BFDBFE'}}
+                trackColor={{ false: '#CBD5E1', true: '#BFDBFE' }}
                 thumbColor={isDarkMode ? '#1E62EC' : '#F1F5F9'}
               />
             </View>
@@ -485,5 +549,54 @@ const styles = StyleSheet.create({
   },
   modalCloseBtnAction: {
     marginTop: 10,
+  },
+  // History Card Styles
+  clearBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: 'rgba(30, 98, 236, 0.08)',
+  },
+  clearBtnText: {
+    color: '#1E62EC',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  historyList: {
+    marginTop: 4,
+  },
+  historyItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  historyIconCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#EBF3FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  historyIndexText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#1E62EC',
+  },
+  historyDetails: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  historyCoords: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  historyTime: {
+    fontSize: 11,
+    marginTop: 1,
+  },
+  historyAccuracy: {
+    fontSize: 13,
+    fontWeight: '600',
   },
 });

@@ -6,7 +6,7 @@ function toRadians(value: number): number {
   return (value * Math.PI) / 180;
 }
 
-function haversineDistanceMeters(a: Coordinate, b: Coordinate): number {
+export function haversineDistanceMeters(a: Coordinate, b: Coordinate): number {
   const deltaLat = toRadians(b.latitude - a.latitude);
   const deltaLon = toRadians(b.longitude - a.longitude);
   const lat1 = toRadians(a.latitude);

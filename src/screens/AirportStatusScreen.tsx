@@ -1,17 +1,17 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useEffect, useRef} from 'react';
-import {ActivityIndicator, Animated, ScrollView, StyleSheet, Text, View} from 'react-native';
-import {NativeStackScreenProps} from '@react-navigation/native-stack';
+import React, { useEffect, useRef } from 'react';
+import { ActivityIndicator, Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import {ActionButton} from '../components/ActionButton';
-import {AirportMap} from '../components/AirportMap';
-import {AppIcon} from '../components/AppIcon';
-import {Header} from '../components/Header';
-import {InfoRow} from '../components/InfoRow';
-import {ThemeAwareCard} from '../components/ThemeAwareCard';
-import {useAirportDataStore} from '../features/airportData/airportDataStore';
-import {useLocationStore} from '../features/location/locationStore';
-import {RootStackParamList} from '../navigation/types';
+import { ActionButton } from '../components/ActionButton';
+import { AirportMap } from '../components/AirportMap';
+import { AppIcon } from '../components/AppIcon';
+import { Header } from '../components/Header';
+import { InfoRow } from '../components/InfoRow';
+import { ThemeAwareCard } from '../components/ThemeAwareCard';
+import { useAirportDataStore } from '../features/airportData/airportDataStore';
+import { useLocationStore } from '../features/location/locationStore';
+import { RootStackParamList } from '../navigation/types';
 
 type AirportStatusScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -41,11 +41,13 @@ export function AirportStatusScreen({
   navigation,
   route,
 }: AirportStatusScreenProps): React.JSX.Element {
-  const {location} = route.params;
+  const { location } = route.params;
   const detectForLocation = useAirportDataStore(state => state.detectForLocation);
   const detection = useAirportDataStore(state => state.cachedDetection);
   const errorMessage = useAirportDataStore(state => state.errorMessage);
   const isLoading = useAirportDataStore(state => state.isLoading);
+  const dataSource = useAirportDataStore(state => state.dataSource);
+  const cacheAgeText = useAirportDataStore(state => state.cacheAgeText);
   const isDarkMode = useLocationStore(state => state.isDarkMode);
 
   const airport = detection?.airport;
@@ -82,19 +84,19 @@ export function AirportStatusScreen({
   const renderBadge = (text: string, tone: 'good' | 'warning' | 'neutral') => {
     const colors = isDarkMode
       ? {
-          good: {bg: 'rgba(16, 185, 129, 0.12)', text: '#10B981'},
-          warning: {bg: 'rgba(217, 119, 6, 0.12)', text: '#F59E0B'},
-          neutral: {bg: 'rgba(148, 163, 184, 0.12)', text: '#94A3B8'},
-        }[tone]
+        good: { bg: 'rgba(16, 185, 129, 0.12)', text: '#10B981' },
+        warning: { bg: 'rgba(217, 119, 6, 0.12)', text: '#F59E0B' },
+        neutral: { bg: 'rgba(148, 163, 184, 0.12)', text: '#94A3B8' },
+      }[tone]
       : {
-          good: {bg: '#E6F7ED', text: '#059669'},
-          warning: {bg: '#FEF3C7', text: '#D97706'},
-          neutral: {bg: '#F3F4F6', text: '#4B5563'},
-        }[tone];
+        good: { bg: '#E6F7ED', text: '#059669' },
+        warning: { bg: '#FEF3C7', text: '#D97706' },
+        neutral: { bg: '#F3F4F6', text: '#4B5563' },
+      }[tone];
 
     return (
-      <View style={[styles.badge, {backgroundColor: colors.bg}]}>
-        <Text style={[styles.badgeText, {color: colors.text}]}>{text}</Text>
+      <View style={[styles.badge, { backgroundColor: colors.bg }]}>
+        <Text style={[styles.badgeText, { color: colors.text }]}>{text}</Text>
       </View>
     );
   };
@@ -106,16 +108,12 @@ export function AirportStatusScreen({
   return (
     <View style={[
       styles.rootContainer,
-      {backgroundColor: isDarkMode ? '#0F172A' : '#F8FAFC'}
+      { backgroundColor: isDarkMode ? '#0F172A' : '#F8FAFC' }
     ]}>
       <Header
         title="Airport Status"
         leftIcon="back"
         onLeftPress={() => navigation.goBack()}
-        rightIcon="info"
-        onRightPress={() => {
-          // Can display debugging alerts/logs if desired
-        }}
       />
 
       <ScrollView
@@ -123,14 +121,14 @@ export function AirportStatusScreen({
         contentContainerStyle={styles.scrollContent}>
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <Animated.View style={{transform: [{scale: scaleAnim}]}}>
+            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
               <AppIcon name="airplane" color="#1E62EC" size={48} />
             </Animated.View>
-            <ActivityIndicator color="#1E62EC" style={{marginTop: 8}} />
-            <Text style={[styles.loadingText, {color: subtitleColor}]}>
+            <ActivityIndicator color="#1E62EC" style={{ marginTop: 8 }} />
+            <Text style={[styles.loadingText, { color: subtitleColor }]}>
               Searching nearby airports...
             </Text>
-            <Text style={[styles.loadingSubtext, {color: subtitleColor}]}>
+            <Text style={[styles.loadingSubtext, { color: subtitleColor }]}>
               Connecting to OpenStreetMap Overpass
             </Text>
           </View>
@@ -188,13 +186,21 @@ export function AirportStatusScreen({
               ]}>
                 <AppIcon name="warning" color="#FB7185" size={22} style={styles.warningIcon} />
                 <View style={styles.warningTextCol}>
-                  <Text style={[styles.warningTitle, {color: '#E11D48'}]}>API Fetch Failure</Text>
-                  <Text style={[styles.warningDesc, {color: isDarkMode ? '#FDA4AF' : '#E11D48'}]}>
+                  <Text style={[styles.warningTitle, { color: '#E11D48' }]}>API Fetch Failure</Text>
+                  <Text style={[styles.warningDesc, { color: isDarkMode ? '#FDA4AF' : '#E11D48' }]}>
                     {errorMessage.includes('Network') || errorMessage.includes('status')
                       ? 'OSM Overpass API offline. Falling back to offline database.'
                       : errorMessage}
                   </Text>
                 </View>
+                <Pressable
+                  onPress={() => detectForLocation(location, true)}
+                  style={({pressed}) => [
+                    styles.retryBtn,
+                    pressed && {opacity: 0.7}
+                  ]}>
+                  <Text style={styles.retryBtnText}>Retry</Text>
+                </Pressable>
               </View>
             ) : null}
 
@@ -206,16 +212,16 @@ export function AirportStatusScreen({
                     <AppIcon name="airplane" color="#FFFFFF" size={18} />
                   </View>
                   <View style={styles.facilityInfo}>
-                    <Text style={[styles.facilityName, {color: textColor}]} numberOfLines={2}>
+                    <Text style={[styles.facilityName, { color: textColor }]} numberOfLines={2}>
                       {airport.name}
                     </Text>
-                    <Text style={[styles.facilityCity, {color: subtitleColor}]}>
+                    <Text style={[styles.facilityCity, { color: subtitleColor }]}>
                       {formatAirportLocation(airport)}
                     </Text>
                   </View>
                   <View style={[
                     styles.iataCodeBadge,
-                    {backgroundColor: isDarkMode ? 'rgba(30, 98, 236, 0.12)' : '#EBF3FF'}
+                    { backgroundColor: isDarkMode ? 'rgba(30, 98, 236, 0.12)' : '#EBF3FF' }
                   ]}>
                     <Text style={styles.iataCodeText}>{airport.iataCode}</Text>
                   </View>
@@ -225,8 +231,8 @@ export function AirportStatusScreen({
               // Empty State Box when Outside Airport
               <ThemeAwareCard style={styles.emptyStateCard}>
                 <AppIcon name="airplane" color={isDarkMode ? '#475569' : '#CBD5E1'} size={40} />
-                <Text style={[styles.emptyStateTitle, {color: textColor}]}>No Airport Found</Text>
-                <Text style={[styles.emptyStateDesc, {color: subtitleColor}]}>
+                <Text style={[styles.emptyStateTitle, { color: textColor }]}>No Airport Found</Text>
+                <Text style={[styles.emptyStateDesc, { color: subtitleColor }]}>
                   Your current location does not match any known airport perimeter. Check SFO Simulation in Developer Settings to test airport-specific states.
                 </Text>
               </ThemeAwareCard>
@@ -274,6 +280,18 @@ export function AirportStatusScreen({
                       : renderBadge('Low', 'neutral')
                 }
               />
+              <InfoRow
+                label="Boundary Data"
+                value={
+                  <Text style={[styles.blueValue, {fontSize: 12, fontWeight: '500'}]}>
+                    {dataSource === 'live'
+                      ? 'OSM Overpass API (Live)'
+                      : dataSource === 'cache'
+                        ? `Local Cache (${cacheAgeText})`
+                        : 'Seeded Offline Database'}
+                  </Text>
+                }
+              />
             </ThemeAwareCard>
 
             {/* Card 4: Geofence Map */}
@@ -296,8 +314,8 @@ export function AirportStatusScreen({
               ]}>
                 <AppIcon name="warning" color="#D97706" size={22} style={styles.warningIcon} />
                 <View style={styles.warningTextCol}>
-                  <Text style={[styles.warningTitle, {color: isDarkMode ? '#F59E0B' : '#B45309'}]}>Near Boundary</Text>
-                  <Text style={[styles.warningDesc, {color: isDarkMode ? '#F59E0B' : '#B45309'}]}>
+                  <Text style={[styles.warningTitle, { color: isDarkMode ? '#F59E0B' : '#B45309' }]}>Near Boundary</Text>
+                  <Text style={[styles.warningDesc, { color: isDarkMode ? '#F59E0B' : '#B45309' }]}>
                     You are near the airport boundary. Results may be affected by GPS accuracy.
                   </Text>
                 </View>
@@ -314,10 +332,10 @@ export function AirportStatusScreen({
                   onPress={() =>
                     detection
                       ? navigation.navigate('TerminalDetail', {
-                          airport,
-                          location,
-                          airportResult: detection.boundary,
-                        })
+                        airport,
+                        location,
+                        airportResult: detection.boundary,
+                      })
                       : undefined
                   }
                 />
@@ -502,5 +520,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 16,
     lineHeight: 18,
+  },
+  retryBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: 'rgba(225, 29, 72, 0.08)',
+    alignSelf: 'center',
+    marginLeft: 10,
+  },
+  retryBtnText: {
+    color: '#E11D48',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });
