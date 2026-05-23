@@ -1,6 +1,8 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, {PropsWithChildren} from 'react';
-import {ScrollView, StyleSheet, ViewStyle} from 'react-native';
+import {ScrollView, StyleSheet, type ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useLocationStore} from '../features/location/locationStore';
 
 interface ScreenProps extends PropsWithChildren {
   contentContainerStyle?: ViewStyle;
@@ -11,10 +13,14 @@ export function Screen({
   contentContainerStyle,
 }: ScreenProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
+  const isDarkMode = useLocationStore(state => state.isDarkMode);
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[
+        styles.container,
+        {backgroundColor: isDarkMode ? '#0F172A' : '#F8FAFC'},
+      ]}
       contentContainerStyle={[
         styles.content,
         {paddingBottom: Math.max(insets.bottom, 20)},
@@ -28,7 +34,6 @@ export function Screen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
   },
   content: {
     padding: 20,

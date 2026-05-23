@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, {useRef, useEffect} from 'react';
 import {StyleSheet, View, Pressable} from 'react-native';
 import MapView, {Circle, Marker, Polygon, PROVIDER_GOOGLE} from 'react-native-maps';
@@ -5,6 +6,7 @@ import MapView, {Circle, Marker, Polygon, PROVIDER_GOOGLE} from 'react-native-ma
 import {getMapRegion} from '../features/geofence/coordinateUtils';
 import {Airport, Coordinate, Terminal} from '../types/geofence';
 import {AppIcon} from './AppIcon';
+import {useLocationStore} from '../features/location/locationStore';
 
 interface AirportMapProps {
   airports: Airport[];
@@ -25,6 +27,67 @@ function toLatLng(coordinate: Coordinate): {
   };
 }
 
+// Sleek midnight map style config for Google Maps
+const darkMapStyle = [
+  {
+    elementType: 'geometry',
+    stylers: [{color: '#0f172a'}],
+  },
+  {
+    elementType: 'labels.text.stroke',
+    stylers: [{color: '#0f172a'}],
+  },
+  {
+    elementType: 'labels.text.fill',
+    stylers: [{color: '#94a3b8'}],
+  },
+  {
+    featureType: 'administrative',
+    elementType: 'geometry',
+    stylers: [{color: '#334155'}],
+  },
+  {
+    featureType: 'poi',
+    elementType: 'geometry',
+    stylers: [{color: '#1e293b'}],
+  },
+  {
+    featureType: 'poi',
+    elementType: 'labels.text.fill',
+    stylers: [{color: '#64748b'}],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry',
+    stylers: [{color: '#1e293b'}],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry.stroke',
+    stylers: [{color: '#334155'}],
+  },
+  {
+    featureType: 'road',
+    elementType: 'labels.text.fill',
+    stylers: [{color: '#475569'}],
+  },
+  {
+    featureType: 'transit',
+    elementType: 'geometry',
+    stylers: [{color: '#1e293b'}],
+  },
+  {
+    featureType: 'water',
+    elementType: 'geometry',
+    stylers: [{color: '#020617'}],
+  },
+  {
+    featureType: 'water',
+    elementType: 'labels.text.fill',
+    stylers: [{color: '#475569'}],
+  },
+];
+
 export function AirportMap({
   airports,
   focusedAirport,
@@ -34,6 +97,7 @@ export function AirportMap({
   showUnmatchedCandidates = false,
 }: AirportMapProps): React.JSX.Element {
   const mapRef = useRef<MapView | null>(null);
+  const isDarkMode = useLocationStore(state => state.isDarkMode);
 
   const visibleAirports = focusedAirport
     ? [focusedAirport]
@@ -49,7 +113,6 @@ export function AirportMap({
 
   const coordsKey = coordinates.map(c => `${c.latitude}:${c.longitude}`).join(',');
 
-  // Animate to fit all coordinates (user location + geofence polygons) when coordinates change
   useEffect(() => {
     if (mapRef.current) {
       mapRef.current.animateToRegion(getMapRegion(coordinates), 600);
@@ -64,17 +127,21 @@ export function AirportMap({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[
+      styles.container,
+      {borderColor: isDarkMode ? '#334155' : '#E2E8F0'}
+    ]}>
       <MapView
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
         style={styles.map}
-        initialRegion={getMapRegion(coordinates)}>
+        initialRegion={getMapRegion(coordinates)}
+        customMapStyle={isDarkMode ? darkMapStyle : undefined}>
         {visibleAirports.map(airport => (
           <Polygon
             key={airport.id}
             coordinates={airport.boundary.map(toLatLng)}
-            fillColor="rgba(16, 185, 129, 0.08)"
+            fillColor={isDarkMode ? 'rgba(16, 185, 129, 0.05)' : 'rgba(16, 185, 129, 0.08)'}
             strokeColor="#10B981"
             strokeWidth={2}
           />
@@ -88,10 +155,14 @@ export function AirportMap({
               coordinates={terminal.polygon.map(toLatLng)}
               fillColor={
                 isFocused
-                  ? 'rgba(16, 185, 129, 0.16)'
-                  : 'rgba(160, 174, 192, 0.08)'
+                  ? isDarkMode
+                    ? 'rgba(16, 185, 129, 0.12)'
+                    : 'rgba(16, 185, 129, 0.16)'
+                  : isDarkMode
+                    ? 'rgba(148, 163, 184, 0.06)'
+                    : 'rgba(160, 174, 192, 0.08)'
               }
-              strokeColor={isFocused ? '#10B981' : '#A0AEC0'}
+              strokeColor={isFocused ? '#10B981' : isDarkMode ? '#475569' : '#A0AEC0'}
               strokeWidth={2}
             />
           );
@@ -116,6 +187,7 @@ export function AirportMap({
       <Pressable
         style={({pressed}) => [
           styles.recenterButton,
+          isDarkMode ? styles.recenterButtonDark : styles.recenterButtonLight,
           pressed ? styles.pressed : undefined,
         ]}
         onPress={handleRecenter}>
@@ -130,9 +202,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
     height: 220,
     overflow: 'hidden',
+    // Shadow
+    shadowColor: '#1E293B',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
   map: {
     flex: 1,
@@ -163,9 +240,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000000',
@@ -173,6 +248,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 3,
+  },
+  recenterButtonLight: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E2E8F0',
+  },
+  recenterButtonDark: {
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
   },
   pressed: {
     opacity: 0.85,

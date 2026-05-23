@@ -2,6 +2,7 @@ import React from 'react';
 import {StyleSheet, Text, View, Pressable} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {AppIcon, IconType} from './AppIcon';
+import {useLocationStore} from '../features/location/locationStore';
 
 interface HeaderProps {
   title: string;
@@ -17,15 +18,29 @@ export function Header({
   title,
   leftIcon,
   leftIconBgColor,
-  leftIconColor = '#4A5568',
+  leftIconColor,
   onLeftPress,
   rightIcon,
   onRightPress,
 }: HeaderProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
+  const isDarkMode = useLocationStore(state => state.isDarkMode);
+
+  // Theme styles
+  const defaultIconColor = isDarkMode ? '#94A3B8' : '#4A5568';
+  const activeLeftIconColor = leftIconColor || defaultIconColor;
+  const headerContainerStyle = [
+    styles.headerContainer,
+    isDarkMode ? styles.darkContainer : styles.lightContainer,
+    {paddingTop: Math.max(insets.top, 12)},
+  ];
+  const titleStyle = [
+    styles.titleText,
+    {color: isDarkMode ? '#F8FAFC' : '#1A202C'},
+  ];
 
   return (
-    <View style={[styles.headerContainer, {paddingTop: Math.max(insets.top, 12)}]}>
+    <View style={headerContainerStyle}>
       <View style={styles.actionContainer}>
         {leftIcon ? (
           <Pressable
@@ -38,7 +53,7 @@ export function Header({
             ]}>
             <AppIcon
               name={leftIcon}
-              color={leftIconBgColor ? '#FFFFFF' : leftIconColor}
+              color={leftIconBgColor ? '#FFFFFF' : activeLeftIconColor}
               size={leftIconBgColor ? 18 : 24}
             />
           </Pressable>
@@ -47,7 +62,7 @@ export function Header({
         )}
       </View>
 
-      <Text style={styles.titleText}>{title}</Text>
+      <Text style={titleStyle}>{title}</Text>
 
       <View style={styles.actionContainer}>
         {rightIcon ? (
@@ -58,7 +73,7 @@ export function Header({
               styles.iconBtn,
               pressed && onRightPress ? styles.pressed : undefined,
             ]}>
-            <AppIcon name={rightIcon} color="#4A5568" size={24} />
+            <AppIcon name={rightIcon} color={defaultIconColor} size={24} />
           </Pressable>
         ) : (
           <View style={styles.placeholder} />
@@ -73,11 +88,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
     paddingHorizontal: 20,
     paddingBottom: 12,
     borderBottomWidth: 1,
+  },
+  lightContainer: {
+    backgroundColor: '#FFFFFF',
     borderBottomColor: '#E2E8F0',
+  },
+  darkContainer: {
+    backgroundColor: '#1E293B',
+    borderBottomColor: '#334155',
   },
   actionContainer: {
     width: 40,
@@ -97,7 +118,6 @@ const styles = StyleSheet.create({
     height: 36,
   },
   titleText: {
-    color: '#1A202C',
     fontSize: 20,
     fontWeight: '700',
     textAlign: 'center',

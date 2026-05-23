@@ -1,14 +1,17 @@
-import React, { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+/* eslint-disable react-native/no-inline-styles */
+import React, {useMemo} from 'react';
+import {ScrollView, StyleSheet, Text, View} from 'react-native';
+import {NativeStackScreenProps} from '@react-navigation/native-stack';
 
-import { ActionButton } from '../components/ActionButton';
-import { AirportMap } from '../components/AirportMap';
-import { AppIcon } from '../components/AppIcon';
-import { Header } from '../components/Header';
-import { InfoRow } from '../components/InfoRow';
-import { detectTerminal } from '../features/geofence/detection';
-import { RootStackParamList } from '../navigation/types';
+import {ActionButton} from '../components/ActionButton';
+import {AirportMap} from '../components/AirportMap';
+import {AppIcon} from '../components/AppIcon';
+import {Header} from '../components/Header';
+import {InfoRow} from '../components/InfoRow';
+import {ThemeAwareCard} from '../components/ThemeAwareCard';
+import {detectTerminal} from '../features/geofence/detection';
+import {useLocationStore} from '../features/location/locationStore';
+import {RootStackParamList} from '../navigation/types';
 
 type TerminalDetailScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -45,7 +48,8 @@ export function TerminalDetailScreen({
   navigation,
   route,
 }: TerminalDetailScreenProps): React.JSX.Element {
-  const { airport, location } = route.params;
+  const {airport, location} = route.params;
+  const isDarkMode = useLocationStore(state => state.isDarkMode);
 
   const terminalDetection = useMemo(
     () => detectTerminal(airport, location),
@@ -58,8 +62,15 @@ export function TerminalDetailScreen({
   const terminalName = terminalDetection.terminal?.name ?? 'Terminal 1';
   const terminalType = getTerminalType(terminalName);
 
+  // Theme-aware styles
+  const textColor = isDarkMode ? '#F8FAFC' : '#1A202C';
+  const subtitleColor = isDarkMode ? '#94A3B8' : '#718096';
+
   return (
-    <View style={styles.rootContainer}>
+    <View style={[
+      styles.rootContainer,
+      {backgroundColor: isDarkMode ? '#0F172A' : '#F8FAFC'}
+    ]}>
       <Header
         title="Terminal Details"
         leftIcon="back"
@@ -69,45 +80,57 @@ export function TerminalDetailScreen({
       <ScrollView
         style={styles.scrollStyle}
         contentContainerStyle={styles.scrollContent}>
-
+        
         {/* Card 1: Facility details card (same as Screen 2) */}
-        <View style={styles.card}>
+        <ThemeAwareCard>
           <View style={styles.facilityRow}>
             <View style={styles.iconCircleBlue}>
               <AppIcon name="airplane" color="#FFFFFF" size={18} />
             </View>
             <View style={styles.facilityInfo}>
-              <Text style={styles.facilityName} numberOfLines={2}>
+              <Text style={[styles.facilityName, {color: textColor}]} numberOfLines={2}>
                 {airport.name}
               </Text>
-              <Text style={styles.facilityCity}>
+              <Text style={[styles.facilityCity, {color: subtitleColor}]}>
                 {formatAirportLocation(airport)}
               </Text>
             </View>
-            <View style={styles.iataCodeBadge}>
+            <View style={[
+              styles.iataCodeBadge,
+              {backgroundColor: isDarkMode ? 'rgba(30, 98, 236, 0.12)' : '#EBF3FF'}
+            ]}>
               <Text style={styles.iataCodeText}>{airport.iataCode}</Text>
             </View>
           </View>
-        </View>
+        </ThemeAwareCard>
 
         {/* Card 2: Terminal detected status (Green layout) */}
         {isInside ? (
-          <View style={styles.terminalBanner}>
+          <View style={[
+            styles.terminalBanner,
+            isDarkMode ? styles.terminalBannerDark : styles.terminalBannerLight
+          ]}>
             <AppIcon name="terminal" color="#059669" size={24} />
             <View style={styles.bannerTextContainer}>
-              <Text style={styles.bannerTitle}>{terminalName}</Text>
-              <Text style={styles.bannerSubtitle}>{terminalType}</Text>
+              <Text style={[styles.bannerTitle, isDarkMode ? styles.greenTextDark : styles.greenTextLight]}>{terminalName}</Text>
+              <Text style={[styles.bannerSubtitle, isDarkMode ? styles.greenTextDark : styles.greenTextLight]}>{terminalType}</Text>
             </View>
-            <View style={styles.detectedBadge}>
-              <Text style={styles.detectedText}>Detected</Text>
+            <View style={[
+              styles.detectedBadge,
+              isDarkMode ? styles.detectedBadgeDark : styles.detectedBadgeLight
+            ]}>
+              <Text style={[styles.detectedText, isDarkMode ? styles.greenTextDark : styles.greenTextLight]}>Detected</Text>
             </View>
           </View>
         ) : (
-          <View style={styles.terminalBannerNeutral}>
-            <AppIcon name="info" color="#4B5563" size={24} />
+          <View style={[
+            styles.terminalBannerNeutral,
+            isDarkMode ? styles.terminalBannerNeutralDark : styles.terminalBannerNeutralLight
+          ]}>
+            <AppIcon name="info" color={isDarkMode ? '#94A3B8' : '#4B5563'} size={24} />
             <View style={styles.bannerTextContainer}>
-              <Text style={styles.bannerTitleNeutral}>Airside area</Text>
-              <Text style={styles.bannerSubtitleNeutral}>Non-terminal zone</Text>
+              <Text style={[styles.bannerTitleNeutral, {color: textColor}]}>Airside area</Text>
+              <Text style={[styles.bannerSubtitleNeutral, {color: subtitleColor}]}>Non-terminal zone</Text>
             </View>
           </View>
         )}
@@ -122,7 +145,7 @@ export function TerminalDetailScreen({
         />
 
         {/* Card 4: Metrics Table */}
-        <View style={styles.card}>
+        <ThemeAwareCard>
           <InfoRow label="Airport (IATA)" value={airport.iataCode} />
           <InfoRow
             label="Terminal"
@@ -157,22 +180,28 @@ export function TerminalDetailScreen({
               </Text>
             }
           />
-        </View>
+        </ThemeAwareCard>
 
         {/* Terminal warning (yellow, visible if status is 'near-boundary') */}
         {status === 'near-boundary' && (
-          <View style={styles.warningBanner}>
+          <View style={[
+            styles.warningBanner,
+            {
+              backgroundColor: isDarkMode ? 'rgba(217, 119, 6, 0.08)' : '#FEF3C7',
+              borderColor: isDarkMode ? 'rgba(217, 119, 6, 0.25)' : '#FDE68A'
+            }
+          ]}>
             <AppIcon name="warning" color="#D97706" size={22} style={styles.warningIcon} />
             <View style={styles.warningTextCol}>
-              <Text style={styles.warningTitle}>Terminal Boundary Alert</Text>
-              <Text style={styles.warningDesc}>
+              <Text style={[styles.warningTitle, {color: isDarkMode ? '#F59E0B' : '#B45309'}]}>Terminal Boundary Alert</Text>
+              <Text style={[styles.warningDesc, {color: isDarkMode ? '#F59E0B' : '#B45309'}]}>
                 GPS accuracy overlaps a terminal boundary. Terminal match is slightly uncertain.
               </Text>
             </View>
           </View>
         )}
 
-        {/* Bottom Actions Row (Both are outline/secondary buttons) */}
+        {/* Bottom Actions Row */}
         <View style={styles.actionsRow}>
           <ActionButton
             title="Back to Home"
@@ -189,7 +218,6 @@ export function TerminalDetailScreen({
 const styles = StyleSheet.create({
   rootContainer: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
   },
   scrollStyle: {
     flex: 1,
@@ -197,18 +225,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
     gap: 16,
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    padding: 16,
-    shadowColor: '#1E293B',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
   },
   facilityRow: {
     flexDirection: 'row',
@@ -228,20 +244,19 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   facilityName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
-    color: '#1A202C',
   },
   facilityCity: {
     fontSize: 12,
-    color: '#718096',
     marginTop: 2,
   },
   iataCodeBadge: {
-    backgroundColor: '#EBF3FF',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#1E62EC',
   },
   iataCodeText: {
     color: '#1E62EC',
@@ -249,22 +264,34 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   terminalBanner: {
-    backgroundColor: '#E6F7ED',
     borderWidth: 1,
-    borderColor: '#A7F3D0',
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
   },
+  terminalBannerLight: {
+    backgroundColor: '#E6F7ED',
+    borderColor: '#A7F3D0',
+  },
+  terminalBannerDark: {
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    borderColor: 'rgba(16, 185, 129, 0.25)',
+  },
   terminalBannerNeutral: {
-    backgroundColor: '#F3F4F6',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  terminalBannerNeutralLight: {
+    backgroundColor: '#F3F4F6',
+    borderColor: '#E5E7EB',
+  },
+  terminalBannerNeutralDark: {
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
   },
   bannerTextContainer: {
     marginLeft: 12,
@@ -273,35 +300,42 @@ const styles = StyleSheet.create({
   bannerTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#065F46',
   },
   bannerSubtitle: {
     fontSize: 12,
-    color: '#047857',
     marginTop: 2,
     fontWeight: '500',
+  },
+  greenTextLight: {
+    color: '#065F46',
+  },
+  greenTextDark: {
+    color: '#10B981',
   },
   bannerTitleNeutral: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#374151',
   },
   bannerSubtitleNeutral: {
     fontSize: 12,
-    color: '#4B5563',
     marginTop: 2,
     fontWeight: '500',
   },
   detectedBadge: {
-    backgroundColor: '#DEF7EC',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
     borderWidth: 1,
+  },
+  detectedBadgeLight: {
+    backgroundColor: '#DEF7EC',
+    borderColor: '#10B981',
+  },
+  detectedBadgeDark: {
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
     borderColor: '#10B981',
   },
   detectedText: {
-    color: '#03543F',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -326,9 +360,7 @@ const styles = StyleSheet.create({
     color: '#4B5563',
   },
   warningBanner: {
-    backgroundColor: '#FEF3C7',
     borderWidth: 1,
-    borderColor: '#FDE68A',
     borderRadius: 12,
     padding: 14,
     flexDirection: 'row',
@@ -342,12 +374,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   warningTitle: {
-    color: '#B45309',
     fontSize: 14,
     fontWeight: '700',
   },
   warningDesc: {
-    color: '#B45309',
     fontSize: 12,
     marginTop: 2,
     lineHeight: 16,

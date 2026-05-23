@@ -8,6 +8,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import {AppIcon, IconType} from './AppIcon';
+import {useLocationStore} from '../features/location/locationStore';
 
 interface ActionButtonProps {
   title: string;
@@ -28,52 +29,83 @@ export function ActionButton({
   icon,
   style,
 }: ActionButtonProps): React.JSX.Element {
+  const isDarkMode = useLocationStore(state => state.isDarkMode);
+
+  // Dynamic Theme Styling
+  const buttonStyle = [
+    styles.button,
+    variant === 'primary'
+      ? styles.primary
+      : isDarkMode
+        ? styles.secondaryDark
+        : styles.secondaryLight,
+    disabled
+      ? isDarkMode
+        ? styles.disabledDark
+        : styles.disabledLight
+      : undefined,
+    style,
+  ];
+
+  const labelStyle = [
+    styles.label,
+    variant === 'primary'
+      ? styles.primaryLabel
+      : isDarkMode
+        ? styles.secondaryLabelDark
+        : styles.secondaryLabelLight,
+    disabled
+      ? isDarkMode
+        ? styles.disabledLabelDark
+        : styles.disabledLabelLight
+      : undefined,
+  ];
+
+  const subtitleStyle = [
+    styles.subtitle,
+    variant === 'primary'
+      ? styles.primarySubtitle
+      : isDarkMode
+        ? styles.secondarySubtitleDark
+        : styles.secondarySubtitleLight,
+    disabled
+      ? isDarkMode
+        ? styles.disabledSubtitleDark
+        : styles.disabledSubtitleLight
+      : undefined,
+  ];
+
+  const iconColor = disabled
+    ? isDarkMode
+      ? '#475569'
+      : '#94A3B8'
+    : variant === 'primary'
+      ? '#FFFFFF'
+      : isDarkMode
+        ? '#F8FAFC'
+        : '#4A5568';
+
   return (
     <Pressable
       accessibilityRole="button"
       disabled={disabled}
       onPress={onPress}
       style={({pressed}) => [
-        styles.button,
-        variant === 'primary' ? styles.primary : styles.secondary,
-        disabled ? styles.disabled : undefined,
+        buttonStyle,
         pressed && !disabled ? styles.pressed : undefined,
-        style,
       ]}>
       <View style={styles.contentContainer}>
         {icon ? (
           <AppIcon
             name={icon}
-            color={
-              disabled
-                ? '#94A3B8'
-                : variant === 'primary'
-                  ? '#FFFFFF'
-                  : '#4A5568'
-            }
+            color={iconColor}
             size={18}
             style={styles.iconStyle}
           />
         ) : null}
         <View style={styles.textContainer}>
-          <Text
-            style={[
-              styles.label,
-              variant === 'primary' ? styles.primaryLabel : styles.secondaryLabel,
-              disabled ? styles.disabledLabel : undefined,
-            ]}>
-            {title}
-          </Text>
-          {subtitle ? (
-            <Text
-              style={[
-                styles.subtitle,
-                variant === 'primary' ? styles.primarySubtitle : styles.secondarySubtitle,
-                disabled ? styles.disabledSubtitle : undefined,
-              ]}>
-              {subtitle}
-            </Text>
-          ) : null}
+          <Text style={labelStyle}>{title}</Text>
+          {subtitle ? <Text style={subtitleStyle}>{subtitle}</Text> : null}
         </View>
       </View>
     </Pressable>
@@ -83,7 +115,6 @@ export function ActionButton({
 const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
-    borderColor: '#E2E8F0',
     borderWidth: 1,
     borderRadius: 12,
     justifyContent: 'center',
@@ -106,14 +137,32 @@ const styles = StyleSheet.create({
   primary: {
     backgroundColor: '#1E62EC',
     borderColor: '#1E62EC',
+    // Shadow
+    shadowColor: '#1E62EC',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  secondary: {
+  secondaryLight: {
     backgroundColor: '#FFFFFF',
     borderColor: '#E2E8F0',
   },
-  disabled: {
+  secondaryDark: {
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
+  },
+  disabledLight: {
     backgroundColor: '#E2E8F0',
     borderColor: '#E2E8F0',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  disabledDark: {
+    backgroundColor: '#334155',
+    borderColor: '#334155',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   pressed: {
     opacity: 0.85,
@@ -126,11 +175,17 @@ const styles = StyleSheet.create({
   primaryLabel: {
     color: '#FFFFFF',
   },
-  secondaryLabel: {
+  secondaryLabelLight: {
     color: '#1A202C',
   },
-  disabledLabel: {
+  secondaryLabelDark: {
+    color: '#F8FAFC',
+  },
+  disabledLabelLight: {
     color: '#94A3B8',
+  },
+  disabledLabelDark: {
+    color: '#475569',
   },
   subtitle: {
     fontSize: 12,
@@ -140,10 +195,16 @@ const styles = StyleSheet.create({
   primarySubtitle: {
     color: 'rgba(255, 255, 255, 0.8)',
   },
-  secondarySubtitle: {
+  secondarySubtitleLight: {
     color: '#718096',
   },
-  disabledSubtitle: {
+  secondarySubtitleDark: {
+    color: '#94A3B8',
+  },
+  disabledSubtitleLight: {
     color: '#CBD5E1',
+  },
+  disabledSubtitleDark: {
+    color: '#475569',
   },
 });

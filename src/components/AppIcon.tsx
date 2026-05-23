@@ -1,6 +1,25 @@
-/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import {StyleSheet, Text, View, StyleProp, ViewStyle} from 'react-native';
+import {StyleProp, ViewStyle} from 'react-native';
+import {
+  Plane,
+  Settings,
+  Info,
+  Check,
+  CheckCircle2,
+  AlertTriangle,
+  Home,
+  ArrowLeft,
+  LocateFixed,
+  Building2,
+  X,
+  MapPin,
+  Crosshair,
+  Moon,
+  Compass,
+  Radar,
+  Navigation,
+  Clock,
+} from 'lucide-react-native';
 
 export type IconType =
   | 'airplane'
@@ -13,7 +32,14 @@ export type IconType =
   | 'back'
   | 'location-target'
   | 'terminal'
-  | 'close';
+  | 'close'
+  | 'map-pin'
+  | 'crosshair'
+  | 'moon'
+  | 'compass'
+  | 'radar'
+  | 'navigation'
+  | 'clock';
 
 interface AppIconProps {
   name: IconType;
@@ -28,197 +54,46 @@ export function AppIcon({
   size = 24,
   style,
 }: AppIconProps): React.JSX.Element {
-  if (name === 'location-target') {
-    return (
-      <View
-        style={[
-          styles.container,
-          {width: size, height: size},
-          style,
-        ]}>
-        {/* Outer Circle */}
-        <View
-          style={{
-            width: size * 0.7,
-            height: size * 0.7,
-            borderRadius: (size * 0.7) / 2,
-            borderWidth: Math.max(1.5, size * 0.08),
-            borderColor: color,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          {/* Center Dot */}
-          <View
-            style={{
-              width: size * 0.25,
-              height: size * 0.25,
-              borderRadius: (size * 0.25) / 2,
-              backgroundColor: color,
-            }}
-          />
-        </View>
-        {/* Crosshair Ticks */}
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            width: Math.max(1.5, size * 0.08),
-            height: size * 0.2,
-            backgroundColor: color,
-          }}
-        />
-        <View
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            width: Math.max(1.5, size * 0.08),
-            height: size * 0.2,
-            backgroundColor: color,
-          }}
-        />
-        <View
-          style={{
-            position: 'absolute',
-            left: 0,
-            height: Math.max(1.5, size * 0.08),
-            width: size * 0.2,
-            backgroundColor: color,
-          }}
-        />
-        <View
-          style={{
-            position: 'absolute',
-            right: 0,
-            height: Math.max(1.5, size * 0.08),
-            width: size * 0.2,
-            backgroundColor: color,
-          }}
-        />
-      </View>
-    );
-  }
-
-  if (name === 'terminal') {
-    return (
-      <View
-        style={[
-          styles.container,
-          {width: size, height: size},
-          style,
-        ]}>
-        {/* Lintel/Roof */}
-        <View
-          style={{
-            width: size * 0.8,
-            height: size * 0.15,
-            backgroundColor: color,
-            borderRadius: 1,
-          }}
-        />
-        {/* Pillars */}
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            width: size * 0.7,
-            height: size * 0.45,
-            marginTop: size * 0.05,
-          }}
-        >
-          <View style={{width: size * 0.1, backgroundColor: color, borderRadius: 0.5}} />
-          <View style={{width: size * 0.1, backgroundColor: color, borderRadius: 0.5}} />
-          <View style={{width: size * 0.1, backgroundColor: color, borderRadius: 0.5}} />
-          <View style={{width: size * 0.1, backgroundColor: color, borderRadius: 0.5}} />
-        </View>
-        {/* Base */}
-        <View
-          style={{
-            width: size * 0.9,
-            height: size * 0.1,
-            backgroundColor: color,
-            borderRadius: 1,
-            marginTop: size * 0.02,
-          }}
-        />
-      </View>
-    );
-  }
-
-  if (name === 'checkmark-circle') {
-    return (
-      <View
-        style={[
-          styles.container,
-          {
-            width: size,
-            height: size,
-            borderRadius: size / 2,
-            backgroundColor: color,
-          },
-          style,
-        ]}>
-        <Text
-          style={{
-            color: '#FFFFFF',
-            fontSize: size * 0.6,
-            fontWeight: '900',
-            textAlign: 'center',
-            lineHeight: size,
-          }}>
-          {'\u2714\uFE0E'}
-        </Text>
-      </View>
-    );
-  }
-
-  // Unicode fallback mapping
-  let glyph = '';
   switch (name) {
     case 'airplane':
-      glyph = '\u2708\uFE0E';
-      break;
+      return <Plane color={color} size={size} style={style} />;
     case 'settings':
-      glyph = '\u2699\uFE0E';
-      break;
+      return <Settings color={color} size={size} style={style} />;
     case 'info':
-      glyph = '\u2139\uFE0E';
-      break;
+      return <Info color={color} size={size} style={style} />;
     case 'checkmark':
-      glyph = '\u2714\uFE0E';
-      break;
+      return <Check color={color} size={size} style={style} />;
+    case 'checkmark-circle':
+      return <CheckCircle2 color={color} size={size} style={style} fill={color === '#10B981' ? 'rgba(16, 185, 129, 0.1)' : undefined} />;
     case 'warning':
-      glyph = '\u26A0\uFE0E';
-      break;
+      return <AlertTriangle color={color} size={size} style={style} />;
     case 'home':
-      glyph = '\u2302\uFE0E';
-      break;
+      return <Home color={color} size={size} style={style} />;
     case 'back':
-      glyph = '\u2190\uFE0E';
-      break;
+      return <ArrowLeft color={color} size={size} style={style} />;
+    case 'location-target':
+      return <LocateFixed color={color} size={size} style={style} />;
+    case 'terminal':
+      return <Building2 color={color} size={size} style={style} />;
     case 'close':
-      glyph = '\u2715\uFE0E';
-      break;
+      return <X color={color} size={size} style={style} />;
+    case 'map-pin':
+      return <MapPin color={color} size={size} style={style} />;
+    case 'crosshair':
+      return <Crosshair color={color} size={size} style={style} />;
+    case 'moon':
+      return <Moon color={color} size={size} style={style} />;
+    case 'compass':
+      return <Compass color={color} size={size} style={style} />;
+    case 'radar':
+      return <Radar color={color} size={size} style={style} />;
+    case 'navigation':
+      return <Navigation color={color} size={size} style={style} />;
+    case 'clock':
+      return <Clock color={color} size={size} style={style} />;
+    default:
+      return <Info color={color} size={size} style={style} />;
   }
-
-  return (
-    <View style={[styles.container, {width: size, height: size}, style]}>
-      <Text
-        style={{
-          color,
-          fontSize: size,
-          fontWeight: 'normal',
-          lineHeight: size,
-          textAlign: 'center',
-        }}>
-        {glyph}
-      </Text>
-    </View>
-  );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+
