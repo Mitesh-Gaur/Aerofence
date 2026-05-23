@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -9,15 +9,15 @@ import {
   Text,
   View,
 } from 'react-native';
-import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import {ActionButton} from '../components/ActionButton';
-import {AppIcon} from '../components/AppIcon';
-import {Header} from '../components/Header';
-import {useLocationStore} from '../features/location/locationStore';
-import {useLocationSubscription} from '../features/location/useLocationSubscription';
-import {RootStackParamList} from '../navigation/types';
+import { ActionButton } from '../components/ActionButton';
+import { AppIcon } from '../components/AppIcon';
+import { Header } from '../components/Header';
+import { useLocationStore } from '../features/location/locationStore';
+import { useLocationSubscription } from '../features/location/useLocationSubscription';
+import { RootStackParamList } from '../navigation/types';
 
 const REQUIRED_ACCURACY_METERS = 25;
 
@@ -38,7 +38,7 @@ function formatTimestamp(timestamp?: number): string {
   });
 }
 
-export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
+export function HomeScreen({ navigation }: HomeScreenProps): React.JSX.Element {
   useLocationSubscription();
   const insets = useSafeAreaInsets();
 
@@ -58,7 +58,7 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
   return (
     <View style={styles.rootContainer}>
       <Header
-        title="Airport Detector"
+        title="Aerofence"
         leftIcon="airplane"
         leftIconBgColor="#1E62EC"
         rightIcon="settings"
@@ -68,7 +68,7 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
       <ScrollView
         style={styles.scrollStyle}
         contentContainerStyle={styles.scrollContent}>
-        
+
         {/* Card 1: GPS Lock Status */}
         <View style={styles.card}>
           <View style={styles.row}>
@@ -186,7 +186,7 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
           disabled={!canCheckAirport}
           onPress={() => {
             if (currentLocation) {
-              navigation.navigate('AirportStatus', {location: currentLocation});
+              navigation.navigate('AirportStatus', { location: currentLocation });
             }
           }}
         />
@@ -223,7 +223,7 @@ export function HomeScreen({navigation}: HomeScreenProps): React.JSX.Element {
                 onValueChange={val => {
                   setDemoMode(val);
                 }}
-                trackColor={{false: '#CBD5E1', true: '#BFDBFE'}}
+                trackColor={{ false: '#CBD5E1', true: '#BFDBFE' }}
                 thumbColor={isDemoMode ? '#1E62EC' : '#F1F5F9'}
               />
             </View>
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     padding: 16,
     shadowColor: '#1E293B',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 2,
